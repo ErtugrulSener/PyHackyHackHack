@@ -8,6 +8,10 @@ PROCESS_VM_OPERATION = 0x0008
 PROCESS_VM_READ = 0x0010
 PROCESS_VM_WRITE = 0x0020
 
+OpenProcess = windll.kernel32.OpenProcess
+ReadProcessMemory = windll.kernel32.ReadProcessMemory
+WriteProcessMemory = windll.kernel32.WriteProcessMemory
+
 
 class ReadWriteMemory:
 
@@ -26,7 +30,7 @@ class ReadWriteMemory:
             if process.name() == processName:
                 dwProccessId = process.pid
 
-                hProcess = (
+                hProcess = OpenProcess(
                     dwDesiredAccess,
                     bInheritHandle,
                     dwProccessId
@@ -62,7 +66,7 @@ class ReadWriteMemory:
 
             ReadProcessMemory(
                 hProcess,
-                ReadBuffer,
+                lpBaseAddress,
                 lpBuffer,
                 nSize,
                 lpNumberOfBytesRead
@@ -100,11 +104,13 @@ class ReadWriteMemory:
 
             WriteProcessMemory(
                 hProcess,
-                WriteBuffer,
+                lpBaseAddress,
                 lpBuffer,
                 nSize,
                 lpNumberOfBytesWritten
             )
+
+            return WriteBuffer.value
 
         except (BufferError, ValueError, TypeError):
             CloseHandle(hProcess)
@@ -120,4 +126,6 @@ class ReadWriteMemory:
 
 if __name__ == "__main__":
     mem = ReadWriteMemory()
-    mem.OpenProcess(sys.argv[1])
+    process = mem.OpenProcess(sys.argv[1])
+    test = mem.WriteProcessMemory(process, 0x00E500A8, 5)
+

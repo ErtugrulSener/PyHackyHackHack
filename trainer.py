@@ -75,7 +75,7 @@ class ReadWriteMemory:
             return ReadBuffer.value
 
         except (BufferError, ValueError, TypeError):
-            CloseHandle(hProcess)
+            self.CloseHandle(hProcess)
             e = 'Handle Closed, Error 1', hProcess, GetLastError()
             return e
 
@@ -113,7 +113,7 @@ class ReadWriteMemory:
             return WriteBuffer.value
 
         except (BufferError, ValueError, TypeError):
-            CloseHandle(hProcess)
+            self.CloseHandle(hProcess)
             e = 'Handle Closed, Error 2', hProcess, GetLastError()
             return e
 
@@ -126,6 +126,13 @@ class ReadWriteMemory:
 
 if __name__ == "__main__":
     mem = ReadWriteMemory()
-    process = mem.OpenProcess(sys.argv[1])
-    test = mem.WriteProcessMemory(process, 0x00E500A8, 5)
 
+    # Now let's test the functions by manipulating the values of the game: AussaultCube
+    main_magazine = 0x028AA8B8
+    process = mem.OpenProcess(sys.argv[1])
+
+    if int(sys.argv[2]) == -1:
+        while True:
+            mem.WriteProcessMemory(process, main_magazine, int(sys.argv[3]))
+    else:
+        mem.WriteProcessMemory(process, main_magazine, int(sys.argv[2]))
